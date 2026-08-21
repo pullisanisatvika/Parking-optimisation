@@ -1,0 +1,1 @@
+Case,Nodes,Edges,ParkingLots,Source,Destination,Alpha,Wmax,Cmax,WeightW,FeasibleParking,runtime_ms,ParkingNode,ParkingSpotIndex,ParkingSpotId,SpotClass,drive_time_hr,internal_drive_time_hr,internal_walk_time_hr,external_walk_distance_km,external_walk_time_hr,walk_distance_km,walk_time_hr,parking_cost,objective,DrivePath,WalkPath

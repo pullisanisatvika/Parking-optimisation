@@ -1,0 +1,108 @@
+\subsection{Medium and Large Scale Networks: Scalability and Parameter Analysis}
+
+For the medium and large scale synthetic networks, the evaluation compares the proposed heuristic with ACO, PSO, and GA. Network sizes of 500, 1000, 1500, 2000, and 2500 nodes are used in the scalability analysis, whereas the remaining parameter sensitivity experiments are carried out on the fixed 2500 node instance. This separation makes it possible to study scalability through node size alone while examining the effect of each remaining parameter in a controlled setting.
+
+All results discussed in this subsection use an objective weight of $\alpha = 0.9$ for travel time and $0.1$ for parking cost. Consequently, the objective is governed primarily by driving time and walking time, while parking cost remains a secondary contributor to the final trade off.
+
+\subsubsection{Effect of Network Size}
+As network size increases, the weighted objective also increases in general. The main reason is that larger networks enlarge the route search space and make it harder to maintain short and efficient vehicle movement. Driving time shows the clearest upward trend, whereas walking time and parking cost remain comparatively less stable and more instance-dependent. The increase in the objective is therefore caused mainly by growing route complexity rather than by a systematic rise in access distance or parking price.
+
+Comparing the methods across the node-size settings, ACO remains the strongest method in most cases, the heuristic matches it at 2000 nodes, and then performs best at 2500 nodes. PSO and GA generally remain behind these two methods. More importantly, the gap does not widen steadily with size. It becomes larger in some intermediate cases and then narrows again later. This means that larger networks do not weaken the heuristic uniformly; they do so mainly when the added nodes create more competing route structures without adding enough redundancy to offset an early local choice.
+
+This happens because the heuristic reduces the search quickly, whereas ACO explores more route alternatives before fixing a route-and-parking combination. When additional nodes create many competing structures, broader exploration is more likely to recover a stronger solution. Overall, the results show that scalability depends not only on the number of nodes, but also on how network growth changes route diversity.
+
+\subsubsection{Effect of Edge Density}
+Fig.~\ref{fig:medium_scale_comparison_edge} shows the effect of increasing the edge density on the objective value. As edge density increases, the objective value generally decreases. Driving time decreases most clearly, because denser networks provide more direct route options and reduce the need for circuitous vehicle movement. Walking time and parking cost fluctuate instead, because they depend more on the selected parking lot than on the number of available links. The decrease in the objective value is therefore caused mainly by the reduction in driving time.
+
+Comparing the methods across the edge-density settings, the heuristic and ACO remain the two strongest methods throughout the variation. The heuristic matches or nearly matches the best result in several cases, while PSO and GA remain less consistent and stay at higher objective levels. The gap between the heuristic and ACO also becomes smaller as the network becomes denser, which indicates that stronger connectivity reduces the advantage of broader search.
+
+This is because additional edges act as recovery options. In a sparse network, a poor routing choice can be difficult to correct because few alternatives exist nearby. In a denser network, the same choice is easier to offset through another path. Overall, the results show that increasing connectivity improves performance for all methods and makes the heuristic more competitive.
+
+\subsubsection{Effect of Maximum Walking Distance}
+Fig.~\ref{fig:medium_scale_comparison_walking_distance} shows the effect of increasing the maximum walking distance on the objective value. As the walking-distance limit increases, the objective value does not improve monotonically. It changes only slightly at the lower thresholds, becomes worse at an intermediate threshold, and improves again only at the largest tested value. Walking time is the main reason for this behavior, because a larger feasible walking radius can increase the final access burden even when it creates more parking options. Driving time and parking cost fluctuate less sharply across the same variation.
+
+Comparing the methods across the walking-distance settings, the heuristic remains competitive when the walking limit is tight, but it loses ground once the feasible parking set expands. ACO responds more consistently, while PSO and GA also remain above the best result in most cases. The main difference is that the heuristic becomes more sensitive once many acceptable parking options become available, because feasibility becomes easier but selecting the most efficient parking lot becomes harder.
+
+This happens because a larger walking threshold changes the balance between route quality and final access. Once more remote parking becomes admissible, the search must distinguish between parking that is merely feasible and parking that remains efficient in the full trip. Overall, the results show that more walking flexibility does not automatically improve solution quality.
+
+\subsubsection{Effect of Traffic Level}
+Fig.~\ref{fig:medium_scale_comparison_traffic} shows the effect of increasing the traffic level on the objective value. As traffic increases, the objective value rises sharply. Driving time increases most strongly, because congestion directly raises the cost of the vehicle route. Walking time and parking cost vary much less across the same settings, so the increase in the objective value is caused mainly by worsening traffic conditions.
+
+Comparing the methods across the traffic levels, ACO remains the strongest method overall, while the heuristic stays close to the leading group and performs more favorably than PSO and GA as congestion intensifies. PSO and GA show a stronger upward trend in the objective value, whereas the heuristic remains more stable relative to the best method. This indicates that heavy traffic exposes differences in route quality more clearly than differences in parking behavior.
+
+This is because congestion magnifies every routing error. A short detour under low traffic can become a substantial penalty under high traffic. Overall, the results show that traffic is one of the clearest parameters for distinguishing search quality across methods.
+
+\subsubsection{Effect of Maximum Parking Budget}
+Fig.~\ref{fig:medium_scale_comparison_budget} shows the effect of increasing the maximum parking budget on the objective value. As the budget increases, the objective value changes only slightly. The main improvement appears when the budget first becomes less restrictive, after which the objective remains almost unchanged. Driving time explains most of this change, because a slightly higher budget can admit a better parking lot and reduce travel burden, whereas parking cost itself is not the dominant source of variation.
+
+Comparing the methods across the budget settings, the heuristic remains close to ACO throughout the variation and shares the top position in multiple cases. PSO and GA remain less stable and continue to produce higher objective values. The small change across the upper budget levels indicates that once the most useful parking options become affordable, further budget increases add little value to the final decision.
+
+This happens because budget matters only when it excludes attractive parking choices. Once those choices become feasible, the structure of the search problem changes very little. Overall, the results show that parking budget behaves more like a threshold parameter than a continuously influential one.
+
+\subsubsection{Effect of Parking Supply}
+Fig.~\ref{fig:medium_scale_comparison_supply} shows the effect of increasing the parking supply on the objective value. As parking supply increases, the objective value does not decrease uniformly. The clearest improvement appears when the initial supply is restrictive, whereas further expansion produces only limited benefit once a reasonably good set of parking options is already available. The main improvement comes through the travel-related components rather than through a systematic reduction in parking cost.
+
+Comparing the methods across the supply settings, the heuristic loses more ground when supply is tight, but recovers once enough alternative lots become available. ACO remains the strongest method overall, while PSO and GA continue to show larger variation and higher objective values. This indicates that additional supply is most useful when it removes a genuine shortage of feasible or attractive parking lots.
+
+This happens because low supply makes each parking decision more consequential. If only a few lots are available, a poor choice is difficult to correct later in the trip. With higher supply, the route becomes less brittle and the search has more recovery options. Overall, the results show that parking supply improves performance mainly by increasing route flexibility.
+
+\subsubsection{Effect of Parking Cost Range}
+Fig.~\ref{fig:medium_scale_comparison_cost} shows the effect of increasing the parking cost range on the objective value. As the parking cost range increases, the objective value changes only moderately. Parking cost is the component that changes most clearly, but because $\alpha = 0.9$ gives much greater weight to travel time, higher prices are usually not strong enough to outweigh differences in driving time and walking time. The objective therefore changes more slowly than it does under parameters that directly affect travel conditions.
+
+Comparing the methods across the parking-cost settings, the heuristic remains close to the best method throughout the sweep, and the separation between the leading methods changes only slightly. ACO remains strongest overall, while PSO and GA continue to produce weaker results more often. This indicates that price variation changes the scale of the objective more than it changes the identity of the strongest method.
+
+This happens because only one component changes materially, while the more heavily weighted travel terms remain dominant in the objective. Overall, the results show that the framework is relatively insensitive to moderate parking price variation when travel efficiency is prioritized.
+
+\subsubsection{Summary}
+Taken together, the medium and large scale experiments show that the heuristic remains one of the strongest methods in the synthetic setting. In most parameter variations it stays closest to ACO, whereas PSO and GA are less stable and more often produce higher objective values. The results also show that performance depends not only on the size of a parameter change, but on how that change alters route flexibility. Edge density and parking supply improve performance because they create recovery options, traffic worsens performance because it amplifies routing errors, and walking flexibility helps only when the expanded feasible set is used carefully. Overall, the heuristic remains competitive across the large synthetic networks.
+
+\subsection{Realistic Urban Network Evaluation Using SUMO}
+
+The final evaluation uses a SUMO based road network extracted from the Waterloo--Kitchener urban area using OpenStreetMap data. Unlike the synthetic experiments, this stage does not vary network size. Instead, all experiments are conducted on a fixed 2055 node directed urban road network, and the analysis focuses on controlled changes in edge density, maximum walking distance, traffic level, parking budget, parking supply, and parking cost range.
+
+This fixed network evaluation is important because good performance on synthetic graphs does not automatically transfer to a realistic urban topology with irregular connectivity, one way roads, and nonuniform structure. The SUMO experiments therefore serve as a realism test rather than a scalability test. All results discussed in this subsection also use $\alpha = 0.9$, so travel time remains the dominant part of the objective, while parking cost contributes only $10\%$. Because the network is fixed and structurally constrained, the following analysis examines how each method behaves when route geometry is dictated by a real road system.
+
+\subsubsection{Baseline SUMO Performance}
+Fig.~\ref{fig:sumo_comparison_baseline} shows the baseline comparison on the fixed SUMO network. Under this setting, the baseline objective is lowest for ACO, followed by GA and PSO, while the heuristic ranks lowest. The gap is not driven mainly by parking cost. Instead, walking time contributes more strongly to the difference, which indicates that final access is harder to manage in the real urban layout than in the synthetic networks.
+
+Comparing the methods at baseline, the ranking is clearer than in the synthetic experiments. The heuristic no longer stays close to the best method, and broader-search methods gain a larger advantage. This indicates that realistic topology increases the value of evaluating more route-and-parking combinations before committing to a solution.
+
+This happens because realism does not simply enlarge the problem. It also makes poor decisions harder to repair. One-way structure, irregular connectivity, and uneven path geometry reduce the number of easy recovery options. Overall, the baseline SUMO result shows that route-and-access coordination becomes more difficult on a realistic road network.
+
+\subsubsection{Effect of Maximum Walking Distance}
+Fig.~\ref{fig:sumo_comparison_walking_distance} shows the effect of increasing the maximum walking distance on the objective value in the SUMO network. As the walking-distance threshold increases, the heuristic does not improve. ACO changes very little across the tested thresholds, which suggests that its preferred solution already satisfies the tighter constraint. The heuristic, by contrast, becomes worse as the threshold becomes more permissive.
+
+Walking time is the main cause of this deterioration, whereas parking cost contributes much less. The larger feasible set does not help the heuristic identify a better overall solution; instead, it creates more room for inefficient access choices. Comparing the methods, ACO remains stable, while the heuristic loses ground as soon as more acceptable parking options become available.
+
+This occurs because the problem becomes less about feasibility and more about selecting among many uneven alternatives. In a realistic network, a relaxed walking limit can reduce solution quality if the method treats any feasible option as acceptable. Overall, the result shows that more choice is useful only when the search can rank those choices effectively.
+
+\subsubsection{Effect of Traffic Level}
+Fig.~\ref{fig:sumo_comparison_traffic} shows the effect of increasing the traffic level on the objective value in the SUMO network. As traffic worsens, the objective increases steadily. The increase is driven mainly by driving time, while walking time and parking cost remain secondary. Traffic therefore affects the objective primarily through the cost of vehicle movement rather than through changes in parking behavior.
+
+Comparing the methods across the traffic levels, ACO remains the strongest method throughout, while the heuristic stays below it but becomes relatively closer as traffic becomes heavier. This does not mean that the heuristic becomes strong in absolute terms. Instead, severe congestion compresses the differences between methods because all of them are increasingly constrained by the physical travel conditions.
+
+This happens because congestion amplifies the cost of every route choice. Once delays become large enough, even a good route can only partly protect the objective. Overall, the traffic experiment shows that there is a point at which network conditions themselves dominate algorithmic differences.
+
+\subsubsection{Effect of Maximum Parking Budget}
+Fig.~\ref{fig:sumo_comparison_budget} shows the effect of increasing the maximum parking budget on the objective value in the SUMO network. As the budget increases, the objective changes mainly when the budget is initially tight. At the lowest budget level, the heuristic and ACO coincide, but once the budget is relaxed, ACO improves while the heuristic changes very little. This indicates that added affordability is useful only if the method can translate it into a better route-and-parking decision.
+
+The main gains come through travel improvement rather than through lower parking cost itself. In other words, the additional budget matters because it expands the feasible set, not because cost becomes less important in the objective. Comparing the methods, ACO exploits that expansion more effectively, while the heuristic shows only limited benefit once the constraint is relaxed.
+
+This happens because a larger budget helps only when the search can identify better parking opportunities within the enlarged feasible set. Overall, the result shows that greater affordability does not automatically improve recommendation quality in a realistic network.
+
+\subsubsection{Effect of Parking Supply}
+Fig.~\ref{fig:sumo_comparison_supply} shows the effect of increasing the parking supply on the objective value in the SUMO network. As parking supply increases, the objective changes only modestly. The heuristic remains below ACO across the tested supply levels, which indicates that simply adding more parking does not automatically improve the final recommendation on a constrained urban graph.
+
+The travel-related components remain the main limitation. Additional supply does not systematically reduce the dominant travel burden, because the issue is not only the number of lots, but how well those lots connect to efficient routes. Comparing the methods, ACO remains stronger throughout because it exploits the available structure more effectively.
+
+This occurs because parking abundance cannot fully compensate for poor network accessibility. Even if more lots are available, the benefit remains limited when route geometry still constrains access to them. Overall, the results show that network structure matters more than nominal supply in the realistic setting.
+
+\subsubsection{Effect of Parking Cost Range}
+Fig.~\ref{fig:sumo_comparison_cost} shows the effect of increasing the parking cost range on the objective value in the SUMO network. As the parking cost range increases, the objective also increases, but only modestly. The main reason is that travel time still dominates the weighted objective, so higher parking prices change the total more than they change the underlying route-and-parking structure.
+
+Parking cost is the component that varies most clearly in this experiment, but it is still not strong enough to alter the ranking substantially. ACO remains the best method, the heuristic stays in the next tier, and PSO and GA remain weaker overall. Thus, price variation changes the scale of the objective without changing which method performs best.
+
+This pattern occurs because the weighting still favors travel efficiency. As a result, parking price is influential but not decisive under the current objective formulation. Overall, the result shows that route quality continues to govern performance even when parking prices rise.
+
+\subsubsection{Summary}
+Overall, the SUMO evaluation confirms that the framework remains meaningful on a realistic urban network, but it also shows that topology changes the balance between methods. Most parameter effects are still driven mainly by driving time, and in some cases by walking time, rather than by parking cost alone. ACO remains the most consistent top performer, while the heuristic loses some of the advantage it showed in the synthetic setting. More broadly, the results show that realistic structure does not simply make the problem larger. It shifts the difficulty toward route-and-access coordination, where broader search becomes more valuable.

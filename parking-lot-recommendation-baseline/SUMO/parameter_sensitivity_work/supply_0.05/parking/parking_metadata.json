@@ -1,0 +1,19 @@
+{
+  "graph_dir": "/Users/satvikapullisani/Desktop/parking-lot-recommendation-baseline-objective copy/parking-lot-recommendation-baseline/SUMO/graph_export",
+  "source_node": "7935712602",
+  "destination_node": "2296395497",
+  "parking_pct": 0.05,
+  "requested_parking_count": 103,
+  "selected_parking_count": 103,
+  "feasible_parking_count": 18,
+  "infeasible_parking_count": 85,
+  "max_walk_km": 0.5,
+  "max_walk_time_hr": 0.1,
+  "search_radius_km": 2.9998,
+  "cost_mode": "baseline",
+  "parking_cost_range": [
+    8.0,
+    20.5
+  ],
+  "seed": 42
+}

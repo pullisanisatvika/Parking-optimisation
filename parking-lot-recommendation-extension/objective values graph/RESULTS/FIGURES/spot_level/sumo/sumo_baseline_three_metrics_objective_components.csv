@@ -1,0 +1,4 @@
+x_value,x_label,method,alpha,driving_time_min,walking_time_min,parking_cost_usd,displayed_driving_component,displayed_walking_component,displayed_cost_component,displayed_total,objective_value
+2055,2055,ACO,0.900000,10.476000,0.985800,19.800000,0.587439,0.055279,0.097778,0.740496,0.740496
+2055,2055,PSO,0.900000,16.164000,0.928200,19.660000,0.906393,0.052049,0.097086,1.055528,1.055528
+2055,2055,GA,0.900000,12.948000,0.928200,19.660000,0.726056,0.052049,0.097086,0.875191,0.875191

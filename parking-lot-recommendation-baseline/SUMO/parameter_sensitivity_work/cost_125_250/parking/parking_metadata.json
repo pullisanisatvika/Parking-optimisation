@@ -1,0 +1,19 @@
+{
+  "graph_dir": "/Users/satvikapullisani/Desktop/final code/SUMO/graph_export",
+  "source_node": "7935712602",
+  "destination_node": "2296395497",
+  "parking_pct": 0.05,
+  "requested_parking_count": 103,
+  "selected_parking_count": 103,
+  "feasible_parking_count": 18,
+  "infeasible_parking_count": 85,
+  "max_walk_km": 0.5,
+  "max_walk_time_hr": 0.1,
+  "search_radius_km": 2.9998,
+  "cost_mode": "elevated",
+  "parking_cost_range": [
+    12.5,
+    25.0
+  ],
+  "seed": 42
+}

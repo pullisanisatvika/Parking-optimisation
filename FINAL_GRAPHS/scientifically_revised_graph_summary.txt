@@ -1,0 +1,92 @@
+SCIENTIFIC TREND REASSESSMENT COMPLETE
+
+INPUT DISCOVERY
+Total graph CSV files discovered: 44
+Baseline graph CSVs discovered: 21
+Extension graph CSVs discovered: 23
+Expected graph groups: 44
+Groups parsed: 44
+Groups skipped: 0
+Groups classified: 44
+Final PDFs matched: 44
+
+OLD SCIENTIFIC CLASSIFICATION
+SUPPORTED: 7
+SUPPORTED_WITH_VARIATION: 23
+NEEDS_CAUTION: 13
+GENUINE_PROBLEM: 1
+
+NEW SCIENTIFIC CLASSIFICATION
+SUPPORTED: 7
+SUPPORTED_WITH_VARIATION: 24
+NEEDS_CAUTION: 13
+GENUINE_PROBLEM: 0
+
+CLASSIFICATION COVERAGE
+Duplicate graph classifications: 0
+Missing graph classifications: 0
+Scientific classification coverage audit: FINAL_GRAPHS/scientific_classification_coverage_audit.csv
+
+CORRECTED BASELINE/SMALL/MAXIMUM_WALKING_DISTANCE
+status: SUPPORTED
+exact monotonicity: PASS
+
+REMAINING GENUINE PROBLEMS
+- None
+
+PREVIOUSLY PROBLEMATIC BUT SCIENTIFICALLY ACCEPTABLE
+- baseline/medium_large/edge_density
+- baseline/medium_large/network_size
+- baseline/small/edge_density
+- baseline/small/maximum_walking_distance
+- baseline/small/network_size
+- baseline/small/parking_budget
+- baseline/small/parking_supply
+- baseline/sumo/edge_density
+- extension/medium_large/edge_density
+- extension/medium_large/parking_spot_availability
+- extension/sumo/edge_density
+- extension/sumo/parking_budget_cmax
+
+EXACT OPTIMIZER MONOTONICITY VIOLATIONS
+- None
+
+METAHEURISTIC SEARCH-QUALITY VIOLATIONS
+- baseline/medium_large/maximum_walking_distance/ACO
+- baseline/medium_large/maximum_walking_distance/GA
+- baseline/medium_large/maximum_walking_distance/PSO
+- baseline/medium_large/parking_budget/GA
+- baseline/medium_large/parking_budget/PSO
+- baseline/medium_large/parking_supply/GA
+- baseline/medium_large/parking_supply/PSO
+- baseline/small/parking_supply/Heuristic
+- baseline/sumo/maximum_walking_distance/Heuristic
+- baseline/sumo/parking_supply/GA
+- baseline/sumo/parking_supply/PSO
+- extension/medium_large/maximum_walking_distance/ACO
+- extension/medium_large/maximum_walking_distance/GA
+- extension/medium_large/maximum_walking_distance/PSO
+- extension/medium_large/parking_budget_cmax/GA
+- extension/medium_large/spots_per_lot/GA
+- extension/medium_large/spots_per_lot/PSO
+- extension/medium_large/traffic_level/ACO
+- extension/medium_large/traffic_level/GA
+- extension/medium_large/traffic_level/PSO
+- extension/sumo/maximum_walking_distance/ACO
+- extension/sumo/maximum_walking_distance/PSO
+- extension/sumo/parking_spot_availability/ACO
+- extension/sumo/parking_spot_availability/GA
+- extension/sumo/parking_spot_availability/PSO
+- extension/sumo/spots_per_lot/PSO
+- extension/sumo/traffic_level/ACO
+- extension/sumo/traffic_level/GA
+- extension/sumo/traffic_level/PSO
+
+NETWORK SIZE GENERAL-TREND CASES
+- baseline/medium_large/network_size
+- baseline/small/network_size
+- baseline/sumo/network_size
+- extension/medium_large/node_size
+
+SKIPPED GROUPS
+- None

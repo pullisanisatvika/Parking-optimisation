@@ -1,0 +1,9 @@
+graph_source_key,experiment_scale,experiment_name,experiment_group,node_size,parameter_label,method_key,source_case,dat_file,case,nodes,method,runtime_s
+SUMO|runtime|final_case|2055|SUMO|Optimization|N2055_C1_I1,sumo,runtime,final_case,2055,SUMO,Optimization,N2055_C1_I1,N2055_C1_I1.dat,N2055_C1_I1,2055,Optimization,271.926368
+SUMO|runtime|final_case|2055|SUMO|ACO|N2055_C1_I1,sumo,runtime,final_case,2055,SUMO,ACO,N2055_C1_I1,N2055_C1_I1.dat,N2055_C1_I1,2055,ACO,2.107773
+SUMO|runtime|final_case|2055|SUMO|PSO|N2055_C1_I1,sumo,runtime,final_case,2055,SUMO,PSO,N2055_C1_I1,N2055_C1_I1.dat,N2055_C1_I1,2055,PSO,682.177402
+SUMO|runtime|final_case|2055|SUMO|GA|N2055_C1_I1,sumo,runtime,final_case,2055,SUMO,GA,N2055_C1_I1,N2055_C1_I1.dat,N2055_C1_I1,2055,GA,271.926368
+SUMO|runtime|final_case|2055|SUMO|Optimization|sumo_case,sumo,runtime,final_case,2055,SUMO,Optimization,sumo_case,sumo_case.dat,sumo_case,2055,Optimization,63.114302
+SUMO|runtime|final_case|2055|SUMO|ACO|sumo_case,sumo,runtime,final_case,2055,SUMO,ACO,sumo_case,sumo_case.dat,sumo_case,2055,ACO,63.114302
+SUMO|runtime|final_case|2055|SUMO|PSO|sumo_case,sumo,runtime,final_case,2055,SUMO,PSO,sumo_case,sumo_case.dat,sumo_case,2055,PSO,869.544119
+SUMO|runtime|final_case|2055|SUMO|GA|sumo_case,sumo,runtime,final_case,2055,SUMO,GA,sumo_case,sumo_case.dat,sumo_case,2055,GA,129.139694

@@ -1,0 +1,98 @@
+/*********************************************
+ * Controlled structured urban-road dataset
+ *********************************************/
+
+Nodes = 20;
+
+E = {
+<1,2> , <1,5> , <2,1> , <2,3> ,
+<2,6> , <2,7> , <3,2> , <3,4> ,
+<3,7> , <4,3> , <4,7> , <4,8> ,
+<5,1> , <5,6> , <5,9> , <6,2> ,
+<6,5> , <6,7> , <6,10> , <7,2> ,
+<7,3> , <7,4> , <7,6> , <8,4> ,
+<8,12> , <9,5> , <9,10> , <10,6> ,
+<10,9> , <10,11> , <10,13> , <11,10> ,
+<11,15> , <12,8> , <12,15> , <13,10> ,
+<13,14> , <14,13> , <14,15> , <14,16> ,
+<14,17> , <15,11> , <15,12> , <15,14> ,
+<15,17> , <15,18> , <16,14> , <16,17> ,
+<16,18> , <17,14> , <17,15> , <17,16> ,
+<17,18> , <18,15> , <18,16> , <18,17> ,
+<18,19> , <18,20> , <19,18> , <19,20> ,
+<20,18> , <20,19> ,
+};
+
+S = 1;		// Source of EV
+D = 20;		// Destination node
+
+Q = 2;		// Number of parking lots (all urban parking facilities)
+L = [19,18];		// Parking lot nodes
+C = [17.78,9.19];	// Parking costs
+FeasibleParking = [1,1];	// 1 if parking lot is within W, else 0
+WalkDistanceToDest = [0.12,0.35];	// Walking distance from each parking lot to destination
+WalkTimeToDest = [0.024,0.07];	// Walking time from each parking lot to destination
+
+W = 0.1;		// Maximum walking time (hr)
+W_km = 0.5;		// Maximum walking distance (km), reference only
+Cmax = 20.5;		// Maximum allowed parking cost
+
+B = 9000;		// Large constant
+
+Alpha = 0.1;	// Objective weight
+
+EdgeMode = "urban_backbone";
+TrafficLevel = "low";
+TrafficSpeedRange = [50,70];
+ParkingCostMode = "baseline_deterministic_varied";
+MapSideKm = 1;
+ParkingCostRange = [8,20.5];
+
+Distance = [
+0.2237 , 0.1878 , 0.2237 , 0.172 ,
+0.1834 , 0.1943 , 0.172 , 0.2097 ,
+0.1482 , 0.2097 , 0.2226 , 0.2142 ,
+0.1878 , 0.1252 , 0.1826 , 0.1834 ,
+0.1252 , 0.2156 , 0.18 , 0.1943 ,
+0.1482 , 0.2226 , 0.2156 , 0.2142 ,
+0.1407 , 0.1826 , 0.2242 , 0.18 ,
+0.2242 , 0.2221 , 0.1869 , 0.2221 ,
+0.2393 , 0.1407 , 0.2964 , 0.1869 ,
+0.1714 , 0.1714 , 0.1948 , 0.2305 ,
+0.2033 , 0.2393 , 0.2964 , 0.1948 ,
+0.222 , 0.2006 , 0.2305 , 0.1676 ,
+0.3682 , 0.2033 , 0.222 , 0.1676 ,
+0.2012 , 0.2006 , 0.3682 , 0.2012 ,
+0.2717 , 0.35 , 0.2717 , 0.12 ,
+0.35 , 0.12 ,
+];
+
+EdgeTime = [
+0.0042 , 0.0032 , 0.0042 , 0.0029 ,
+0.0035 , 0.0033 , 0.0029 , 0.0039 ,
+0.0025 , 0.0039 , 0.004 , 0.0038 ,
+0.0032 , 0.0024 , 0.0033 , 0.0035 ,
+0.0024 , 0.004 , 0.0033 , 0.0033 ,
+0.0025 , 0.004 , 0.004 , 0.0038 ,
+0.0024 , 0.0033 , 0.004 , 0.0033 ,
+0.004 , 0.004 , 0.0036 , 0.004 ,
+0.0042 , 0.0024 , 0.0051 , 0.0036 ,
+0.0029 , 0.0029 , 0.0035 , 0.0042 ,
+0.0038 , 0.0042 , 0.0051 , 0.0035 ,
+0.0044 , 0.0034 , 0.0042 , 0.0031 ,
+0.0058 , 0.0038 , 0.0044 , 0.0031 ,
+0.0036 , 0.0034 , 0.0058 , 0.0036 ,
+0.0046 , 0.07 , 0.0046 , 0.024 ,
+0.07 , 0.024 ,
+];
+
+EdgeType = [
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" ,
+"drive" , "walk" , "drive" , "walk" , "walk" , "walk" ,
+];

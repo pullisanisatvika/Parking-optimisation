@@ -1,0 +1,20 @@
+{
+  "net_file": "/Users/satvikapullisani/Desktop/final code/SUMO/sumo.net.xml",
+  "parser": "sumolib",
+  "include_internal": false,
+  "vehicle_class": "passenger",
+  "largest_component_only": true,
+  "pre_component_node_count": 2080,
+  "pre_component_edge_count": 5420,
+  "largest_component_node_count": 2055,
+  "node_count": 2055,
+  "edge_count": 5385,
+  "units": {
+    "x": "network coordinate units from SUMO",
+    "y": "network coordinate units from SUMO",
+    "length_m": "meters",
+    "speed_mps": "meters/second",
+    "drive_time_s": "seconds"
+  },
+  "variation_case": "C6"
+}

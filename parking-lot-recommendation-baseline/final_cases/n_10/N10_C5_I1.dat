@@ -1,0 +1,84 @@
+/*********************************************
+ * Controlled structured urban-road dataset
+ *********************************************/
+
+Nodes = 10;
+
+E = {
+<1,2> , <1,4> , <1,5> , <1,6> ,
+<1,9> , <2,1> , <2,3> , <2,6> ,
+<2,7> , <3,2> , <3,4> , <3,6> ,
+<3,7> , <4,1> , <4,3> , <4,7> ,
+<4,8> , <4,9> , <5,1> , <5,6> ,
+<5,7> , <5,9> , <5,10> , <6,1> ,
+<6,2> , <6,3> , <6,5> , <6,7> ,
+<6,9> , <6,10> , <7,2> , <7,3> ,
+<7,4> , <7,5> , <7,6> , <7,8> , <7,10> ,
+<8,4> , <8,7> , <8,9> , <9,1> ,
+<9,4> , <9,5> , <9,6> , <9,8> ,
+<10,5> , <10,6> ,
+};
+
+S = 8;		// Source of EV
+D = 10;		// Destination node
+
+Q = 3;		// Number of parking lots (all urban parking facilities)
+L = [5,6,7];		// Parking lot nodes
+C = [10.77,19.98,8];	// Parking costs
+FeasibleParking = [1,1,1];	// 1 if parking lot is within W, else 0
+WalkDistanceToDest = [0.2661,0.3339,0.3165];	// Walking distance from each parking lot to destination
+WalkTimeToDest = [0.0532,0.0668,0.0633];	// Walking time from each parking lot to destination
+
+W = 0.1;		// Maximum walking time (hr)
+W_km = 0.5;		// Maximum walking distance (km), reference only
+Cmax = 20.5;		// Maximum allowed parking cost
+
+B = 9000;		// Large constant
+
+Alpha = 0.9;	// Objective weight
+
+EdgeMode = "urban_backbone";
+TrafficLevel = "medium";
+TrafficSpeedRange = [30,49];
+ParkingCostMode = "baseline_deterministic_varied";
+MapSideKm = 0.6882;
+ParkingCostRange = [8,20.5];
+
+Distance = [
+0.1839, 0.4857, 0.1543, 0.2293 ,
+0.264, 0.1839, 0.1414, 0.1508 ,
+0.1598, 0.1414, 0.1723, 0.249 ,
+0.1219, 0.4857, 0.1723, 0.183 ,
+0.176, 0.5744, 0.1543, 0.1028 ,
+0.2675, 0.1501, 0.2661, 0.2293 ,
+0.1508, 0.249, 0.1028, 0.1774 ,
+0.2143, 0.3339, 0.1598, 0.1219 ,
+0.183, 0.2675, 0.1774, 0.2392 ,
+0.3165, 0.176, 0.2392, 0.5845 ,
+0.264, 0.5744, 0.1501, 0.2143 ,
+0.5845, 0.2661, 0.3339 ,
+];
+
+EdgeTime = [
+0.005, 0.0103, 0.0042, 0.0051 ,
+0.0081, 0.005, 0.0045, 0.0032 ,
+0.0036, 0.0045, 0.0047, 0.0078 ,
+0.0026, 0.0103, 0.0047, 0.0044 ,
+0.0043, 0.0142, 0.0042, 0.0021 ,
+0.0061, 0.0045, 0.0532, 0.0051 ,
+0.0032, 0.0078, 0.0021, 0.0038 ,
+0.0053, 0.0668, 0.0036, 0.0026 ,
+0.0044, 0.0061, 0.0038, 0.0054 ,
+0.0633, 0.0043, 0.0054, 0.0155 ,
+0.0081, 0.0142, 0.0045, 0.0053 ,
+0.0155, 0.0532, 0.0668 ,
+];
+
+EdgeType = [
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "walk" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "drive" , "walk" , "drive" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "walk" , "walk" , "drive" , "drive" ,
+"drive" , "drive" , "drive" , "drive" , "drive" , "drive" , "walk" ,
+];

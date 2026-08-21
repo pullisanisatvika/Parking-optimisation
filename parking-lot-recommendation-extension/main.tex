@@ -1,0 +1,690 @@
+
+% ---------- Packages ----------
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{url}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{comment}
+
+% ---------- Title ----------
+\title{A Dynamic Optimization Framework for Real-Time Parking Recommendations in Urban Networks}
+
+% ---------- Authors ----------
+\author{
+\IEEEauthorblockN{Satvika Pullisani}
+Department of Computer Science \\
+Wilfrid Laurier University \\
+Waterloo, Canada \\
+Email: pull1500@mylaurier.ca
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Urban parking search contributes to congestion, travel delay, and inefficient use of road infrastructure, especially in dense urban areas. This paper presents a Dynamic Parking Optimization Framework (DPOF) for recommending parking lots under changing traffic and parking conditions. DPOF models the decision process as a two-stage route-and-parking optimization problem in which a driver first travels from the source to a selected parking lot by vehicle and then walks from the selected lot to the destination. The objective minimizes a weighted combination of total travel time and parking cost while satisfying user-defined preferences, including maximum walking distance and maximum parking cost. An exact optimization model is used to validate the formulation on small-scale networks, while a Heuristic solution approach is developed for medium- and large-scale networks where exact optimization becomes computationally expensive. The Heuristic is evaluated against Particle Swarm Optimization (PSO), Genetic Algorithm (GA), and Ant Colony Optimization (ACO) using travel time, walking distance, parking cost, and runtime under controlled variations in network structure and parking-related parameters. The evaluation is conducted on synthetic urban-like datasets and a Simulation of Urban Mobility (SUMO)-based real-road-network case study. The results show that the Heuristic provides consistent recommendations with low computational cost, remains competitive with ACO, and generally exhibits more controlled route-related and parking-selection behavior than PSO and GA. These findings indicate that DPOF is suitable for scalable parking recommendation under current traffic and parking conditions.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Urban parking, parking recommendation systems, dynamic parking optimization, heuristic, meta-heuristic, SUMO simulation
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+The rapid growth of population and vehicle ownership in urban areas has made parking a persistent challenge in modern transportation systems. In dense urban environments, vehicles searching for available parking contribute significantly to congestion near destinations. This search process increases travel delay, fuel consumption, emissions, and driver frustration while adding unnecessary traffic to the road network \cite{ref1}. Parking management has therefore become an important component of intelligent transportation systems (ITS) because it directly affects congestion, travel time, and overall road-network performance \cite{ref2}.
+
+Smart parking systems (SPS) have improved the monitoring, estimation, and prediction of parking-space occupancy \cite{ref3}. These systems help drivers identify available parking lots more efficiently than traditional search methods \cite{ref4}. However, for a driver already traveling through a road network, recommendation must consider more than availability alone. It must also account for current traffic conditions, driving time to candidate parking lots, walking distance from the selected parking lot to the destination, and parking cost. Reservation requirements can affect parking availability and access in high-demand areas \cite{ref5}, competition among parking facilities can influence demand distribution and utilization \cite{ref6}, and pricing mechanisms can affect both parking demand and the cost of the selected parking option \cite{ref7}. In this work, recommendations are evaluated using the current traffic state and parking conditions encoded in each instance, without forecasting future traffic or parking-price variation.
+
+Prior work on SPS has improved several parking-management functions, including allocation, pricing, assignment, monitoring, reservation, and demand estimation. Collectively, these studies show that parking systems must consider space utilization \cite{ref8}, adaptive pricing under changing demand \cite{ref9}, travel cost among nearby parking lots \cite{ref10}, demand balancing across parking lots \cite{ref11}, and occupancy estimation under incomplete sensing infrastructure \cite{ref12}. They also highlight the importance of transaction-based occupancy inference \cite{ref13}, reservation before arrival \cite{ref14}, parking-space-view-based service improvement \cite{ref15}, uncertain parking availability \cite{ref16}, and curb parking demand influenced by nearby buildings, businesses, and activity areas \cite{ref17}.
+
+Although these studies improve important components of SPS, many do not fully address parking-lot recommendation for a driver already en route, where the decision must jointly consider route-dependent travel time, walking distance, parking cost, availability, and user preferences as network size and parking supply vary. This gap naturally leads to an optimization problem that combines routing, parking selection, and user constraints.
+
+Because exact optimization becomes computationally expensive as network size increases, this paper uses an exact optimization model for small-scale validation and develops a proposed Heuristic for medium- and large-scale networks. DPOF models the decision process as a two-stage route-and-parking optimization problem in which the driver travels from the source to a selected parking lot by vehicle and then walks from the selected lot to the destination. To place the proposed Heuristic in context, it is evaluated against meta-heuristic baselines. Genetic Algorithm (GA) is widely used for complex routing and transportation optimization problems \cite{ref18}. Particle Swarm Optimization (PSO) has been applied to path planning and search-based optimization problems \cite{ref19}. Ant Colony Optimization (ACO) has been used for congestion-aware route optimization and related transportation problems \cite{ref20}.
+
+DPOF is evaluated using controlled synthetic urban-like datasets across different network sizes and parameter variations. The evaluation considers travel time, walking distance, parking cost, and runtime under variations in network size, edge density, parking supply, walking-distance threshold, traffic level, parking-cost threshold, and parking-cost variation. A SUMO-based real-road-network instance is also used to evaluate the framework under realistic urban topology. The main contributions of this paper are as follows:
+
+\begin{itemize}
+\item A Dynamic Parking Optimization Framework (DPOF) is proposed for parking-lot recommendation under current traffic and parking conditions.
+\item The parking-lot recommendation problem is formulated as a two-stage route-and-parking optimization model that minimizes a weighted combination of total travel time and parking cost under user-defined constraints, including maximum walking distance and maximum parking cost.
+\item An exact optimization model is used for small-scale validation, and a proposed Heuristic is developed for medium- and large-scale networks where exact optimization becomes computationally expensive.
+\item The proposed Heuristic is evaluated against GA, PSO, and ACO using travel time, walking distance, parking cost, and runtime.
+\item The methods are tested under controlled variations in network size, edge density, parking supply, traffic level, walking-distance threshold, parking-cost threshold, and parking-cost variation.
+\item A SUMO-based real-road-network instance is used to evaluate the framework under realistic urban topology.
+\end{itemize}
+
+The remainder of this paper is organized as follows. Section II reviews related work on urban parking systems, parking optimization, and scalable search-based methods. Section III presents the system model. Section IV presents the mathematical formulation. Section V describes the proposed Heuristic and the meta-heuristic baselines. Section VI presents the experimental setup, synthetic evaluation, performance analysis, and SUMO-based evaluation. Section VII concludes the paper and discusses future work.
+
+\section{Literature Review}
+
+Smart parking systems have emerged as a major solution for reducing the time drivers spend searching for parking in urban areas. Traditional parking systems provide limited support to drivers and often require them to search manually for available parking spaces or parking lots. This process increases congestion, fuel consumption, emissions, and overall travel delay. With the development of ITS, recent research has improved parking recommendation through occupancy prediction, dynamic pricing, reservation services, allocation models, and monitoring methods. These studies provide important foundations for SPS; however, many of them focus on specific components of the parking problem rather than the complete parking-lot recommendation problem faced by a driver already moving through an urban road network.
+
+A major direction in the literature focuses on parking occupancy prediction. Accurate prediction of vacant parking spaces is important for improving parking guidance and reducing unnecessary search time. Li et al. \cite{ref1} proposed a near-real-time method for predicting parking occupancy across different parking lot types. Their subsequent work improved prediction accuracy by capturing relationships among nearby parking areas and their occupancy changes over time \cite{ref2}. Zhao et al. \cite{ref3} used parking meters as virtual sensors to estimate on-street parking availability at the urban scale. Song et al. \cite{ref4} addressed missing sensor data through collaborative vacancy prediction. These studies improve parking availability estimation, which is an important input for SPS. However, their focus remains primarily on prediction and estimation rather than on parking-lot recommendation that jointly considers route-dependent travel time, walking distance, and parking cost.
+
+Another important research stream focuses on parking pricing, competition, and reservation management. Boateng et al. \cite{ref5} proposed a reservation and pricing framework for automated valet parking and charging using multi-agent reinforcement learning. Saharan et al. \cite{ref6} developed a dynamic pricing and allocation model for smart on-street parking. Hu et al. \cite{ref7} studied parking management under demand uncertainty. Ahmed et al. \cite{ref8} developed a paging-based reservation strategy that improves parking-slot utilization by managing reservations more efficiently. These studies show that pricing and reservation mechanisms can improve parking utilization, revenue, and system-level efficiency. However, their emphasis is mainly on parking-system management rather than driver-centered parking-lot recommendation under current traffic and parking conditions.
+
+Parking allocation and assignment have also been widely studied. Hassija et al. \cite{ref9} proposed a decentralized parking slot allocation framework using virtual voting and adaptive pricing to improve fairness and security. Tang et al. \cite{ref10} introduced the SCP-tree method to identify multiple nearby parking spots while reducing group travel cost. Tran Thi Kim et al. \cite{ref11} formulated parking assignment as a demand-balancing problem across multiple parking lots. These works demonstrate the importance of fair allocation, reduced travel cost, and balanced use of parking facilities. However, they generally do not combine current traffic conditions and route-dependent driving time within a single parking-lot recommendation process.
+
+Several studies have focused on parking monitoring, demand estimation, occupancy inference, and reservation support. Kim et al. \cite{ref12} explored the use of unmanned aerial vehicles for parking occupancy monitoring. Assemi et al. \cite{ref13} inferred parking occupancy from payment transaction data when complete sensing infrastructure is unavailable. Hu et al. \cite{ref14} examined competition and reservation services in smart parking systems. Wang et al. \cite{ref15} proposed a reservation optimization method based on parking-space view. Wang et al. \cite{ref16} studied the dynamic supply of parking spaces under uncertainty. Nie et al. \cite{ref17} estimated public street-parking demand using nearby activity locations, such as commercial areas, offices, and public facilities. These studies improve parking data collection, occupancy estimation, demand understanding, and reservation support. However, they primarily strengthen individual SPS functions rather than combining current parking availability, route cost, walking distance, and parking cost in a unified parking-lot recommendation framework.
+
+Since parking-lot recommendation in urban networks requires selecting from many route and parking combinations, heuristic and meta-heuristic methods are often used in transportation optimization. Ben Helal et al. \cite{ref18} demonstrated the effectiveness of a hybrid Genetic Algorithm for vehicle routing. Hu et al. \cite{ref19} used Particle Swarm Optimization for path planning in complex environments. Wang et al. \cite{ref20} developed an improved Ant Colony Optimization approach for congestion-aware routing. Although these studies are not directly focused on parking-lot recommendation, they show that GA, PSO, and ACO are relevant meta-heuristic baselines for large-scale transportation and search-based optimization problems where exact optimization becomes computationally difficult.
+
+Overall, existing research has improved parking prediction, pricing, allocation, monitoring, reservation, and transportation optimization. However, many approaches address these tasks separately and do not fully combine current traffic and parking conditions, route-dependent driving time, walking distance, parking cost, and user preferences in a driver-centered parking-lot recommendation framework. Motivated by this gap, DPOF formulates parking-lot recommendation as a two-stage route-and-parking optimization problem. The framework uses an optimization model for small-scale validation and a Heuristic for medium- and large-scale urban road networks, and it is evaluated against GA, PSO, and ACO using controlled synthetic urban-like datasets and a SUMO-based real-road-network instance.
+
+\section{System Model}
+
+This section describes the system model of DPOF. The framework consists of a driver, a centralized recommendation server, simulated traffic and parking data sources, and an urban road network. These components interact to recommend suitable parking lots under current traffic and parking conditions.
+
+The urban environment is modeled as a directed graph \(G=(N,E)\), where \(N\) denotes the set of nodes and \(E\) denotes the set of directed edges. The nodes represent road intersections, the driver's source node \(S\), the destination node \(D\), and candidate parking lots \(p_i \in P\), where \(P\) is the set of candidate parking lots. Each directed edge \((i,j)\in E\) represents a road segment between two nodes and is associated with a fixed travel distance \(d_{ij}\) and a travel time \(t_{ij}\). The travel distance \(d_{ij}\) remains fixed, while \(t_{ij}\) may change according to the current traffic condition encoded in each instance.
+
+The framework is designed to support recomputation when updated current-node, traffic, or parking information becomes available. In the experiments reported in this paper, each dataset evaluates the current source-to-parking-to-destination recommendation encoded in the instance. Let \(t^{drive}_{p_i}\) denote the estimated driving time from the current source node to parking lot \(p_i\). The walking distance from parking lot \(p_i\) to the destination \(D\), denoted by \(d^{walk}_{p_i}\), is obtained from the direct parking-to-destination walking edge. Since walking speed is fixed, the corresponding walking time \(t^{walk}_{p_i}\) is derived from \(d^{walk}_{p_i}\).
+
+Each parking lot \(p_i\) is characterized by availability status \(a_{p_i}\), walking distance \(d^{walk}_{p_i}\), and parking cost \(C_{p_i}\). Parking availability is represented as an input attribute. In the reported experiments, availability is fixed within each instance, while feasibility is determined by the availability flag, maximum walking distance \(W_{\max}\), and maximum parking cost \(C_{\max}\). A parking lot is excluded from further consideration if it is unavailable, if its walking distance exceeds \(W_{\max}\), or if its parking cost exceeds \(C_{\max}\). The walking-distance threshold is specified in kilometers and converted to an equivalent walking-time limit using \(v_{\mathrm{walk}}=5.0\,\mathrm{km/h}\) where required by the implementation.
+
+At each recommendation instance, the system evaluates the tuple
+\[
+(t^{drive}_{p_i},\, t^{walk}_{p_i},\, C_{p_i},\, d^{walk}_{p_i})
+\]
+for every parking lot \(p_i \in P\). Only parking lots that satisfy the availability, walking-distance, and parking-cost constraints are retained as feasible parking lots. These feasible parking lots are then evaluated by the optimization model, the proposed Heuristic, and the meta-heuristic baselines under the same system model.
+
+\begin{table}[t]
+\centering
+\caption{Notation used in the system model and problem formulation}
+\label{tab:notation}
+\small
+\begin{tabularx}{\linewidth}{l X}
+\hline
+\textbf{Symbol} & \textbf{Description} \\
+\hline
+\(G=(N,E)\) & Directed urban road network \\
+\(S\) & Source node \\
+\(D\) & Destination node \\
+\(P\) & Set of candidate parking lots \\
+\(p_i\) & Candidate parking lot \(i\) \\
+\(t_{ij}\) & Travel time on edge \((i,j)\) \\
+\(d_{ij}\) & Travel distance on edge \((i,j)\) \\
+\(t^{drive}_{p_i}\) & Driving time from source/current node to parking lot \(p_i\) \\
+\(t^{walk}_{p_i}\) & Walking time from parking lot \(p_i\) to destination \\
+\(d^{walk}_{p_i}\) & Walking distance from parking lot \(p_i\) to destination \\
+\(C_{p_i}\) & Parking cost at parking lot \(p_i\) \\
+\(a_{p_i}\) & Availability status of parking lot \(p_i\) \\
+\(W_{\max}\) & Maximum acceptable walking distance \\
+\(C_{\max}\) & Maximum acceptable parking cost \\
+\(\alpha\) & Objective-weight parameter \\
+\(x_{ij}\) & Binary variable equal to 1 if edge \((i,j)\) is selected \\
+\(T_i\) & Accumulated travel time upon reaching node \(i\) \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Problem Formulation}
+
+This section formulates parking-lot recommendation in DPOF as a two-stage route-and-parking optimization problem over the network defined in the system model. The objective is to determine a route in which the driver travels from the source node to a selected parking lot by vehicle and then walks to the destination, while jointly optimizing total travel time and parking cost under user preferences. The destination is reached through a parking-to-destination walking edge rather than directly through the driving route.
+
+\subsection{Network Representation and Decision Variables}
+
+For each directed edge \((i,j)\in E\), the binary route-selection variable is defined as
+\begin{equation}
+x_{ij} =
+\begin{cases}
+1, & \text{if edge } (i,j) \text{ is included in the selected route},\\
+0, & \text{otherwise}.
+\end{cases}
+\label{eq:x_definition}
+\end{equation}
+Let \(T_i\) denote the accumulated travel time upon reaching node \(i \in N\). Because the route includes both the driving path to a parking lot and the final walking edge to the destination, \(T_D\) represents the total travel time from the source to the destination.
+
+\subsection{Objective Function}
+
+The objective function minimizes a weighted combination of total travel time and parking cost:
+\begin{equation}
+\min \; \alpha T_D + (1-\alpha) Cost,
+\label{eq:objective}
+\end{equation}
+where \(T_D\) denotes total travel time, \(Cost\) denotes the selected parking cost, and \(\alpha \in [0,1]\) controls the trade-off between travel time and parking cost. In the implementation, this is an unnormalized weighted composite score using the travel-time and parking-cost units stored in each dataset.
+
+\subsection{Routing Feasibility Constraints}
+
+The selected edges must form a valid route from the source to a parking lot and then from that lot to the destination. Flow conservation is enforced as
+\begin{equation}
+\sum_{j:(i,j)\in E} x_{ij} - \sum_{j:(j,i)\in E} x_{ji} =
+\begin{cases}
+1, & \text{if } i = S,\\
+-1, & \text{if } i = D,\\
+0, & \text{otherwise}.
+\end{cases}
+\label{eq:flow_conservation}
+\end{equation}
+To prevent immediate use of both directions of the same bidirectional road segment, the model includes
+\begin{equation}
+x_{ij} + x_{ji} \leq 1, \qquad \forall (i,j)\in E \text{ such that } (j,i)\in E.
+\label{eq:bidirectional_constraint}
+\end{equation}
+
+\subsection{Travel-Time Accumulation}
+
+Travel time is accumulated along selected edges using
+\begin{equation}
+x_{hi}=1 \;\Rightarrow\; T_i = T_h + t_{hi}, \qquad \forall (h,i)\in E,\; i\neq S.
+\label{eq:time_accumulation}
+\end{equation}
+The starting-node time is initialized as
+\begin{equation}
+T_S = 0.
+\label{eq:source_time}
+\end{equation}
+
+\subsection{Parking Selection and User Constraints}
+
+The selected parking lot is determined by the final parking-to-destination walking edge. Exactly one parking lot is selected:
+\begin{equation}
+\sum_{p\in P:(L[p],D)\in E} x_{L[p],D} = 1.
+\label{eq:parking_selection}
+\end{equation}
+The parking cost is linked to the selected lot:
+\begin{equation}
+Cost = \sum_{p\in P:(L[p],D)\in E} C[p]\,x_{L[p],D}.
+\label{eq:parking_cost_link}
+\end{equation}
+The user's maximum parking cost is enforced as
+\begin{equation}
+Cost \leq C_{\max}.
+\label{eq:parking_cost_cap}
+\end{equation}
+The walking-distance constraint is
+\begin{equation}
+d^{walk}_{p}\,x_{L[p],D} \leq W_{\max}, \qquad \forall p\in P \text{ such that } (L[p],D)\in E.
+\label{eq:walking_distance_constraint}
+\end{equation}
+Availability is handled as an input feasibility condition before optimization in the reported experiments.
+
+\section{Heuristic and Meta-Heuristic Methods}
+
+This section presents the proposed Heuristic and the meta-heuristic baselines used in DPOF. The proposed Heuristic is the main scalable method and approximates the optimization objective with lower computational cost than exact optimization. GA, PSO, and ACO are included as comparative baselines. All methods follow the same two-stage route-and-parking structure: the driver travels from the source or current node to a selected parking lot by vehicle and then walks to the destination.
+
+\subsection{Proposed Heuristic Method}
+
+The proposed Heuristic is designed for scalable parking recommendation. Instead of repeatedly solving the full optimization model, it computes route-related values for candidate parking lots, removes infeasible and dominated candidates, and ranks the remaining options using a weighted travel-time and parking-cost score. Starting from the source/current node, the Heuristic computes Dijkstra-based driving time to candidate parking lots using the current edge travel times. For each candidate parking lot, it checks the parking-to-destination walking edge, obtains the corresponding walking distance, derives walking time using the fixed walking speed, and applies feasibility filtering based on availability, \(W_{\max}\), and \(C_{\max}\).
+
+\begin{algorithm}[t]
+\caption{Proposed Heuristic Method}
+\label{alg:heuristic_method}
+\begin{algorithmic}[1]
+\STATE \textbf{Input:} Graph \(G\), source/current node \(S\), destination \(D\), parking lots \(P\), edge travel times, parking costs, \(W_{\max}\), \(C_{\max}\), \(\alpha\)
+\STATE Compute shortest driving times from \(S\) to all reachable nodes using Dijkstra's algorithm.
+\STATE Initialize feasible set \(F \leftarrow \emptyset\).
+\FOR{each parking lot \(p \in P\)}
+\STATE Compute driving time, walking time, walking distance, and parking cost for \(p\).
+\IF{\(p\) satisfies availability, walking-distance, and parking-cost constraints}
+\STATE Add \(p\) to \(F\).
+\ENDIF
+\ENDFOR
+\STATE Remove dominated parking lots from \(F\).
+\FOR{each \(p \in F\)}
+\STATE Compute \(H_p=\alpha(t^{drive}_{p}+t^{walk}_{p})+(1-\alpha)C_p\).
+\ENDFOR
+\STATE Select \(p^*=\arg\min_{p\in F} H_p\).
+\STATE \textbf{return} selected parking lot and route.
+\end{algorithmic}
+\end{algorithm}
+
+Dominance filtering removes a parking lot if another candidate is no worse in driving time, walking distance, and parking cost, and strictly better in at least one of these criteria. The selected route is the shortest driving path to the chosen parking lot followed by the direct walking edge from that lot to the destination.
+
+\subsection{Meta-Heuristic Baseline Design}
+
+GA, PSO, and ACO are implemented as comparative baselines. Before applying any meta-heuristic search, candidate parking lots are filtered using availability, the parking-to-destination walking edge, the walking-distance threshold, and the parking-cost threshold. Each remaining solution represents a selected parking lot together with a corresponding driving route to that lot. The final walking component is obtained from the parking-to-destination walking edge.
+
+Unlike the proposed Heuristic, which computes Dijkstra-based driving times first and then ranks parking lots directly, the meta-heuristic baselines perform a broader search over parking-lot selection and route construction. Each method generates parking-lot choices together with route-preference information, while a guided DFS/backtracking decoder constructs a valid driving route to the chosen parking lot by exploring admissible branches in the road network.
+
+\subsection{Genetic Algorithm}
+
+The GA is implemented as an evolutionary baseline. Each chromosome contains a parking-lot gene and node-priority genes. The parking-lot gene identifies the candidate parking location, while the node-priority genes define the route-preference order used by the guided DFS/backtracking decoder. During each generation, chromosomes are decoded into route-and-parking solutions and evaluated using the common weighted objective. Tournament selection, crossover, mutation, and elitism are used to update the population.
+
+\subsection{Particle Swarm Optimization}
+
+PSO is implemented as a swarm-based baseline. Each particle contains a parking-position variable and node-priority values. The parking-position variable maps to a feasible parking lot, while the node-priority values guide the route decoder. At each iteration, every particle is decoded into a route-and-parking solution and evaluated using the common weighted objective. Each particle updates its personal-best solution when an improved solution is found, and the swarm maintains a global-best solution.
+
+\subsection{Ant Colony Optimization}
+
+ACO is implemented as a pheromone-based baseline. Each ant selects a feasible parking lot and constructs a driving route using pheromone-guided edge preferences together with the guided DFS/backtracking decoder. After all ants construct route-and-parking solutions, each solution is evaluated using the common weighted objective. The best solution found so far is updated, pheromone values evaporate on driving edges, and feasible ant solutions deposit new pheromone on the edges they use.
+
+\subsection{Time Complexity Analysis}
+
+Let \(|V|\) denote the number of graph nodes, \(|E|\) the number of graph edges, and \(|P|\) the number of candidate parking lots. In the implemented Heuristic, Dijkstra's algorithm is run once from the source/current node to all reachable nodes. Therefore, the route-cost computation is approximately
+\[
+O((|V|+|E|)\log |V|).
+\]
+This is followed by \(O(|P|)\) feasibility filtering and score computation, and up to \(O(|P|^2)\) dominance filtering. Hence, the overall complexity of the proposed Heuristic is
+\[
+O((|V|+|E|)\log |V| + |P|^2).
+\]
+
+For GA, the dominant cost is route decoding and fitness evaluation across generations, which gives \(O(G_{max}N_{pop}D_{route})\). For PSO, the dominant cost is route decoding and fitness evaluation for all particles, which gives \(O(I_{max}N_{swarm}D_{route})\). For ACO, the main cost comes from route construction and evaluation for all ants, together with pheromone updates on the driving edges, giving \(O(I_{max}(N_{ants}D_{route}+|E|))\). Here, \(D_{route}\) denotes the cost of guided DFS/backtracking route decoding.
+\section{Results and Discussion}
+
+\subsection{Simulation Setup, Performance Metrics, and Parameters}
+
+The experimental evaluation is first conducted on controlled synthetic urban-like road networks generated at multiple scales. This setup provides reproducible test instances while preserving the two-stage route-and-parking structure used in the Dynamic Parking Optimization Framework (DPOF): the driver travels from the source to a selected parking lot by vehicle and then walks from the selected parking lot to the destination. This design makes it possible to study individual parameter effects while keeping the overall recommendation structure unchanged.
+
+The datasets are generated for network sizes of \(20\), \(40\), \(60\), \(80\), \(100\), \(500\), \(1000\), \(1500\), \(2000\), and \(2500\) nodes. The original node-size datasets are used for scalability analysis under the baseline configuration. The small-scale instances are used for optimization-model validation and for comparing exact Optimization, where verified exact results are available, with the proposed Heuristic. Additional small-scale parameter-sensitivity analysis uses the fixed \(40\)-node instance. The medium- and large-scale parameter-sensitivity analysis uses the fixed \(2500\)-node instance to evaluate Heuristic, ACO, PSO, and GA under multiple values of each parameter. The SUMO-based parameter-sensitivity analysis uses a fixed \(2055\)-node real-road network for realistic urban-network evaluation. In each instance, the candidate parking lots, parking costs, and direct parking-to-destination walking connections are generated consistently so that all methods solve the same route-and-parking recommendation problem.
+
+A baseline configuration is used as the reference setting for controlled comparison. It uses a directed road network with an urban-backbone structure, parking supply of approximately \(5\%\) of the nodes, maximum walking distance \(W_{\max}=0.50\,\mathrm{km}\), objective weight \(\alpha=0.50\), parking-cost cap \(C_{\max}=20.5\), and parking-cost range from \(8.0\) to \(20.5\). Low-traffic driving speeds are sampled from \(50\) to \(70\,\mathrm{km/h}\), and walking speed is fixed at \(v_{\mathrm{walk}}=5.0\,\mathrm{km/h}\). The remaining parameter variations are evaluated against this baseline.
+
+The evaluation follows a one-factor-at-a-time comparison strategy. For each parameter-sensitivity experiment, one parameter is varied while the remaining settings are kept at their baseline values. Node-size analysis uses the original baseline node-size datasets and is kept separate from the fixed-size parameter-variation results because it is used specifically to evaluate scalability. Walking-distance analysis tests \(W_{\max}=0.25\), \(0.50\), \(0.75\), and \(1.00\,\mathrm{km}\). Parking-supply analysis tests approximately \(5\%\), \(10\%\), \(15\%\), and \(20\%\) candidate parking-lot supply. Parking-budget analysis tests \(C_{\max}=10.0\), \(15.0\), \(20.5\), and \(25.0\). Parking-cost variation tests the ranges \(8.0\)--\(20.5\), \(10.0\)--\(22.5\), \(12.5\)--\(25.0\), and \(15.0\)--\(30.0\). Traffic-level analysis tests very low, low, medium, and high traffic using speed ranges of \(60\)--\(80\), \(50\)--\(70\), \(30\)--\(49\), and \(10\)--\(29\,\mathrm{km/h}\), respectively. Edge-density analysis reports the actual number of directed edges on the x-axis instead of category names alone, which provides a clearer interpretation of how increasing network connectivity affects route construction and method behavior.
+
+The controlled parameter settings used in the main parameter-sensitivity analysis are summarized in Table~\ref{tab:parameter_variation_mapping}. All parameter-sensitivity figures use a consistent three-panel format: total travel time and walking distance are shown with grouped bars, while parking cost is shown with a heatmap to make repeated selected-cost values easier to interpret.
+
+\begin{table}[t]
+\centering
+\caption{Controlled parameter settings used in the parameter-sensitivity analysis.}
+\label{tab:parameter_variation_mapping}
+\scriptsize
+\begin{tabularx}{\linewidth}{p{0.28\linewidth} X}
+\hline
+\textbf{Analysis} & \textbf{Parameter Setting} \\
+\hline
+Node size & \(20\)--\(2500\) nodes under the baseline configuration \\
+Walking distance & \(W_{\max}=0.25,0.50,0.75,1.00\,\mathrm{km}\) \\
+Parking supply & Approximately \(5\%,10\%,15\%,20\%\) candidate parking lots \\
+Parking budget & \(C_{\max}=10.0,15.0,20.5,25.0\) \\
+Parking-cost range & \(8.0\)--\(20.5\), \(10.0\)--\(22.5\), \(12.5\)--\(25.0\), \(15.0\)--\(30.0\) \\
+Traffic level & Very low \(60\)--\(80\), low \(50\)--\(70\), medium \(30\)--\(49\), high \(10\)--\(29\,\mathrm{km/h}\) \\
+Edge density & Increasing road-network connectivity reported using the actual number of directed edges \\
+\hline
+\end{tabularx}
+\end{table}
+
+The main performance metrics are total travel time, walking distance, parking cost, and runtime. Total travel time combines the driving time from the source to the selected parking lot and the walking time from that lot to the destination. Walking distance measures the user's post-parking walking burden and directly reflects the walking-distance limit. Parking cost measures the monetary cost of the selected parking lot, while runtime measures computational efficiency. Additional outputs, including feasibility, selected parking node, and route information, are also recorded for detailed diagnostics.
+
+All methods are evaluated on the same input instances to ensure fair comparison. For each parameter setting and network size, the compared methods use the same directed road network, source node, destination node, candidate parking lots, edge travel times, parking costs, walking-distance limit, parking-cost cap, and fixed \(\alpha\) setting. Parking availability is represented as an input attribute of each candidate lot; in the reported experiments, availability is fixed within each instance, while feasibility is determined by the availability flag, walking-distance limit, and parking-cost cap. The framework is designed to support recomputation when updated current-node, traffic, or parking information becomes available, although the reported experiments evaluate the current source-to-parking-to-destination recommendation encoded in each dataset. The exact Optimization model is used only for small-scale validation where verified solver output is available. This validates the formulation while also illustrating that exact Optimization becomes computationally expensive as the network size increases. A separate SUMO-based evaluation is presented later to validate the framework on a realistic urban road topology.
+
+\subsection{Small-Scale Networks: Validation and Method Behavior}
+
+Small-scale networks are used to validate the formulation and to examine method behavior before moving to medium- and large-scale instances. In this part of the study, exact Optimization is used as a benchmark where it returns verified results, and the proposed Heuristic is compared directly against it. The small-scale experiments cover network sizes of \(20\), \(40\), \(60\), \(80\), and \(100\) nodes. Solved paired Optimization--Heuristic solution-quality results are available for the \(20\)-node and \(40\)-node cases, while the larger small-scale cases are used mainly to illustrate runtime limitations of exact solving.
+
+As shown in Fig.~\ref{fig:small_scale_runtime}, the exact model solves the \(20\)-node and \(40\)-node instances, but its runtime increases sharply and larger small-scale instances become unavailable because of memory, time, and scalability limits. This confirms that exact Optimization is useful for validation but becomes computationally impractical as the network size increases.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.45\textwidth]{COMPARISIONS/small_scale_comparison/small_scale_runtime_log_scale.png}
+    \caption{Small-scale runtime scalability of exact and approximate methods.}
+    \label{fig:small_scale_runtime}
+\end{figure}
+
+Fig.~\ref{fig:small_scale_runtime} is used to evaluate whether exact solving remains practical as the network size increases. The graph shows a clear runtime gap between the exact model and the approximate methods. This deviation is caused by the exact model solving the complete mathematical formulation, while the Heuristic, ACO, PSO, and GA use approximate search or scoring strategies. The proposed Heuristic has the lowest runtime because it evaluates feasible parking candidates directly after shortest-path computation, whereas the meta-heuristics require repeated route decoding.
+
+The small-scale results also confirm that the best parking choice is not determined by the shortest driving route alone. A parking lot with a shorter driving path may still be less desirable if it has a longer walking connection or a higher parking cost. Therefore, the small-scale results validate the intended trade-off among driving time, walking distance, and parking cost, while also motivating the use of scalable methods for larger networks.
+
+Fig.~\ref{fig:small_scale_three_metrics}(a)--(c) show total travel time, walking distance, and parking cost, respectively, for the paired \(20\)-node and \(40\)-node small-scale cases. This comparison isolates the direct solution-quality validation of the proposed Heuristic against exact Optimization on the cases where both methods have solved results. The main insight is that the two methods remain closely aligned across all three metrics. Method-wise, Optimization provides the reference solution on solvable instances, while the Heuristic produces comparable parking-lot recommendation behavior with similar travel-time, walking-distance, and parking-cost outcomes.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/small_scale_comparison/three_metric_panels/small_scale_node_size_three_metrics.png}
+    \caption{Small-scale solution-quality comparison between exact Optimization and the proposed Heuristic.}
+    \label{fig:small_scale_three_metrics}
+\end{figure*}
+
+To align the small-scale analysis with the parameter-variation structure used later, additional parameter-sensitivity plots are generated for the fixed \(40\)-node instance where paired Optimization-Heuristic results are available. The following comparisons therefore use the \(40\)-node case. Their purpose is to check whether the proposed Heuristic remains consistent with the exact benchmark when individual parameters are varied under controlled conditions. In these figures, panels (a) and (b) show total travel time and walking distance, while panel (c) reports parking cost as a heatmap.
+
+Fig.~\ref{fig:small_scale_walking_distance_parameter}(a)--(c) show total travel time, walking distance, and parking cost when \(W_{\max}\) is tested at \(0.25\), \(0.50\), \(0.75\), and \(1.00\,\mathrm{km}\). This result shows the effect of the walking-feasibility threshold on the two-stage route-and-parking recommendation. The main insight is that relaxing the threshold expands the feasible parking set, although the selected parking lot can remain unchanged when the same candidate is dominant. Method-wise, Optimization and the Heuristic respond consistently to the walking-distance constraint.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/small_scale_comparison/three_metric_panels/small_scale_full_sweep_walking_distance_three_metrics.png}
+    \caption{Small-scale walking-distance sensitivity for exact Optimization and the proposed Heuristic.}
+    \label{fig:small_scale_walking_distance_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:small_scale_parking_supply_parameter}(a)--(c) show total travel time, walking distance, and parking cost for parking-supply levels of approximately \(5\%\), \(10\%\), \(15\%\), and \(20\%\). The purpose of this figure is to isolate how expanding the candidate parking set changes the route-and-parking recommendation at the same node size. The main insight is that additional parking options expand the feasible search space but do not guarantee improvement in every metric. Method-wise, Optimization serves as the exact benchmark for this parameter change, while the Heuristic shows comparable behavior under the same expansion of candidate parking lots.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/small_scale_comparison/three_metric_panels/small_scale_full_sweep_parking_supply_three_metrics.png}
+    \caption{Small-scale parking-supply sensitivity for exact Optimization and the proposed Heuristic.}
+    \label{fig:small_scale_parking_supply_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:small_scale_traffic_parameter}(a)--(c) show total travel time, walking distance, and parking cost across very low, low, medium, and high traffic levels. This figure evaluates the effect of congestion while keeping the network, parking set, and parking constraints fixed. The main insight is that heavier traffic primarily affects the driving component of the recommendation. Method-wise, Optimization provides the benchmark response to increased congestion, while the Heuristic tracks the same directional change without requiring exact solving.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/small_scale_comparison/three_metric_panels/small_scale_full_sweep_traffic_level_three_metrics.png}
+    \caption{Small-scale traffic-level sensitivity for exact Optimization and the proposed Heuristic.}
+    \label{fig:small_scale_traffic_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:small_scale_parking_budget_parameter}(a)--(c) show total travel time, walking distance, and parking cost when \(C_{\max}\) is tested at \(10.0\), \(15.0\), \(20.5\), and \(25.0\). This comparison highlights the effect of the cost constraint on the final parking-lot recommendation. The main insight is that a stricter cap removes expensive lots from the feasible set, while a relaxed cap can allow a more expensive but faster or closer lot. Method-wise, Optimization and the Heuristic remain directionally consistent in how they trade parking cost against travel-related metrics.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/small_scale_comparison/three_metric_panels/small_scale_full_sweep_parking_budget_cmax_three_metrics.png}
+    \caption{Small-scale parking-budget sensitivity for exact Optimization and the proposed Heuristic.}
+    \label{fig:small_scale_parking_budget_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:small_scale_parking_cost_parameter}(a)--(c) show total travel time, walking distance, and parking cost under four parking-cost ranges. The purpose of this figure is to isolate how changes in the parking-cost landscape influence the selected parking lot and the resulting route-and-parking recommendation. The main insight is that parking-cost variation can affect all three metrics indirectly when the selected parking lot changes. Method-wise, the figure indicates that Optimization and the Heuristic remain directionally consistent under changing parking-cost conditions.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/small_scale_comparison/three_metric_panels/small_scale_full_sweep_parking_cost_variation_three_metrics.png}
+    \caption{Small-scale parking-cost sensitivity for exact Optimization and the proposed Heuristic.}
+    \label{fig:small_scale_parking_cost_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:small_scale_edge_density_parameter}(a)--(c) show total travel time, walking distance, and parking cost as road-network connectivity changes. The x-axis reports the actual number of directed edges, which makes the connectivity change explicit. The main insight is that edge density primarily affects route-related behavior, while walking distance and parking cost change mainly when the selected parking lot changes. Method-wise, Optimization and the Heuristic respond similarly to the directed-edge changes, indicating that the Heuristic captures the same route-selection behavior under edge-density variation.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/small_scale_comparison/three_metric_panels/small_scale_full_sweep_edge_density_three_metrics.png}
+    \caption{Small-scale edge-density sensitivity for exact Optimization and the proposed Heuristic, with edge density reported using the number of directed edges.}
+    \label{fig:small_scale_edge_density_parameter}
+\end{figure*}
+
+Overall, the small-scale results serve two purposes. First, they show that exact Optimization is useful for validation on solvable instances but quickly becomes computationally limiting as network size increases. Second, they show that the proposed Heuristic remains closely aligned with exact Optimization where direct paired comparison is available. This combination motivates the use of the proposed Heuristic in the medium- and large-scale experiments.
+
+\subsection{Medium- and Large-Scale Networks: Scalability and Parameter Analysis}
+
+For medium- and large-scale networks, the parking-lot recommendation problem becomes more challenging because the number of nodes, road edges, candidate parking lots, and feasible route-and-parking combinations increases substantially. The proposed Heuristic addresses this growth by computing shortest-path driving costs to feasible parking lots and then applying feasibility filtering, dominance reduction, and weighted scoring. In contrast, GA, PSO, and ACO jointly search over parking-lot selection and route construction through their respective route-decoding behavior. As a result, differences across methods are mainly caused by route construction, guided decoding, and selected parking-lot choices under the same feasibility constraints.
+
+The following results examine framework behavior under controlled variations in network and parking parameters. The node-size analysis is kept separate from the fixed-size parameter-variation results because the original node-size datasets are unchanged and are used specifically to evaluate scalability. The remaining parameter-sensitivity figures use the fixed \(2500\)-node instance to isolate each parameter. In the parameter-sensitivity figures, panels (a) and (b) report total travel time and walking distance using grouped bars, while panel (c) reports parking cost using a heatmap.
+
+\subsubsection{Effect of Network Size}
+
+The node-size results under the baseline setting are shown in Fig.~\ref{fig:node_size_three_metrics}. This figure provides the main cross-scale comparison of method behavior from medium-scale to large-scale instances.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/medium_large_parameter_comparisons/three_metric_panels/node_size_three_metrics.png}
+    \caption{Effect of network size on travel time, walking distance, and parking cost under the baseline setting.}
+    \label{fig:node_size_three_metrics}
+\end{figure*}
+
+Fig.~\ref{fig:node_size_three_metrics}(a)--(c) show total travel time, walking distance, and parking cost, respectively, as network size increases under the baseline case. This comparison isolates the effect of network growth without mixing in other parameter changes. The main insight is that network size mainly affects total travel time, while walking distance and parking cost remain more closely tied to parking-lot selection. Method-wise, the proposed Heuristic maintains consistent performance and remains competitive, ACO stays close in many cases, and PSO and GA show greater variability due to route-decoding behavior.
+
+\subsubsection{Effect of Edge Density}
+
+The edge-density results are shown in Fig.~\ref{fig:medium_large_edge_density_parameter}. This figure uses a grouped bar chart at the fixed \(2500\)-node setting and reports the actual number of directed edges on the x-axis.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/medium_large_parameter_comparisons/three_metric_panels/medium_large_full_sweep_edge_density_three_metrics.png}
+    \caption{Medium- and large-scale edge-density sensitivity at the fixed \(2500\)-node instance, with edge density reported using the number of directed edges.}
+    \label{fig:medium_large_edge_density_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:medium_large_edge_density_parameter}(a)--(c) show total travel time, walking distance, and parking cost as road-network connectivity increases. The edge-density analysis reports the actual number of directed edges on the x-axis, which provides a clearer interpretation of how increasing network connectivity affects route construction and method behavior. The main insight is that edge density mainly affects route construction and travel-time behavior, while walking distance and parking cost change mainly when the selected parking lot changes. Method-wise, the proposed Heuristic remains consistent, ACO remains competitive, and PSO and GA show more visible variability as the route-search space expands.
+
+\subsubsection{Effect of Parking Supply}
+
+The parking-supply results are shown in Fig.~\ref{fig:medium_large_parking_supply_parameter}. Increasing the number of candidate parking lots gives the framework more choices, but it also enlarges the search space for methods that jointly search over parking-lot selection and route construction.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/medium_large_parameter_comparisons/three_metric_panels/medium_large_full_sweep_parking_supply_three_metrics.png}
+    \caption{Medium- and large-scale parking-supply sensitivity at the fixed \(2500\)-node instance.}
+    \label{fig:medium_large_parking_supply_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:medium_large_parking_supply_parameter}(a)--(c) show total travel time, walking distance, and parking cost for parking-supply levels of approximately \(5\%\), \(10\%\), \(15\%\), and \(20\%\). The purpose of this figure is to isolate the effect of expanding the candidate parking set at a fixed node size. The main insight is that parking supply expands the candidate-search space but does not guarantee improvement in every metric because added lots may be infeasible or dominated. Method-wise, the proposed Heuristic changes little across the tested supply levels, ACO stays relatively close to it, and PSO and GA show greater variability under the expanded candidate set.
+
+\subsubsection{Effect of Traffic Level}
+
+The traffic-level results are shown in Fig.~\ref{fig:medium_large_traffic_parameter}. Since edge travel times are recomputed under different traffic-speed ranges, the figure shows whether the framework responds consistently to congestion.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/medium_large_parameter_comparisons/three_metric_panels/medium_large_full_sweep_traffic_level_three_metrics.png}
+    \caption{Medium- and large-scale traffic-level sensitivity at the fixed \(2500\)-node instance.}
+    \label{fig:medium_large_traffic_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:medium_large_traffic_parameter}(a)--(c) show total travel time, walking distance, and parking cost across very low, low, medium, and high traffic settings. This result shows whether congestion changes the route-and-parking recommendation while the rest of the instance is fixed. The main insight is that traffic level primarily affects the driving component, while walking distance and parking cost remain largely unchanged unless the selected parking lot changes. Method-wise, the proposed Heuristic and ACO show controlled changes, while PSO and GA show higher values and more variation in several settings.
+
+\subsubsection{Effect of Maximum Walking-Distance Limit}
+
+The walking-distance-threshold results are shown in Fig.~\ref{fig:medium_large_walking_distance_parameter}. A stricter walking-distance limit restricts the feasible parking set, while a relaxed limit allows farther parking lots to be considered.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/medium_large_parameter_comparisons/three_metric_panels/medium_large_full_sweep_walking_distance_three_metrics.png}
+    \caption{Medium- and large-scale walking-distance sensitivity at the fixed \(2500\)-node instance.}
+    \label{fig:medium_large_walking_distance_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:medium_large_walking_distance_parameter}(a)--(c) show total travel time, walking distance, and parking cost when \(W_{\max}\) is tested at \(0.25\), \(0.50\), \(0.75\), and \(1.00\,\mathrm{km}\). This comparison highlights the trade-off between shorter driving and longer walking under a larger feasible parking set. The main insight is that relaxing the maximum walking-distance limit can introduce a walking-cost trade-off and can also change parking cost when lower-cost lots become feasible. Method-wise, the proposed Heuristic and ACO remain close in overall behavior, while PSO and GA show larger variation in travel time and walking distance.
+
+\subsubsection{Effect of Parking-Cost Cap}
+
+The parking-budget results are shown in Fig.~\ref{fig:medium_large_parking_budget_parameter}. This variation checks whether the framework respects the user's maximum parking-cost preference under \(C_{\max}=10.0\), \(15.0\), \(20.5\), and \(25.0\).
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/medium_large_parameter_comparisons/three_metric_panels/medium_large_full_sweep_parking_budget_cmax_three_metrics.png}
+    \caption{Medium- and large-scale parking-budget sensitivity at the fixed \(2500\)-node instance.}
+    \label{fig:medium_large_parking_budget_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:medium_large_parking_budget_parameter}(a)--(c) show total travel time, walking distance, and parking cost across the four parking-cost caps. The main insight is that a stricter budget removes expensive lots from the feasible set, while a relaxed budget can allow a more expensive but faster or closer lot. In the tested cases, the method ranking largely repeats the preceding figures: the proposed Heuristic remains consistent, ACO is the closest search-based baseline, and PSO and GA show more variability due to route decoding.
+
+\subsubsection{Effect of Parking-Cost Variation}
+
+The parking-cost-variation results are shown in Fig.~\ref{fig:medium_large_parking_cost_parameter}. This variation evaluates four parking-cost ranges: \(8.0\)--\(20.5\), \(10.0\)--\(22.5\), \(12.5\)--\(25.0\), and \(15.0\)--\(30.0\).
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/medium_large_parameter_comparisons/three_metric_panels/medium_large_full_sweep_parking_cost_variation_three_metrics.png}
+    \caption{Medium- and large-scale parking-cost sensitivity at the fixed \(2500\)-node instance.}
+    \label{fig:medium_large_parking_cost_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:medium_large_parking_cost_parameter}(a)--(c) show total travel time, walking distance, and parking cost under the four parking-cost ranges. The main insight is that cost changes affect the selected parking lot when the relative ranking of feasible lots changes. When the same lot remains dominant, walking distance and total travel time remain nearly unchanged, so this result is best interpreted as a cost-sensitivity check rather than a separate scalability result.
+
+\subsubsection{Runtime Scalability}
+
+Runtime analysis is shown in Fig.~\ref{fig:node_size_runtime}. Unlike the previous figures, which focus on solution quality, this figure emphasizes algorithmic efficiency. The runtime axis is shown on a logarithmic scale because the runtime gap between the proposed Heuristic and the meta-heuristic baselines is substantial.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1.00\columnwidth]{COMPARISIONS/medium_large_parameter_comparisons/three_metric_panels/node_size_runtime_analysis.png}
+    \caption{Runtime scalability comparison across medium and large networks using logarithmic scale.}
+    \label{fig:node_size_runtime}
+\end{figure}
+
+Fig.~\ref{fig:node_size_runtime} shows runtime across the baseline node-size cases. This comparison isolates computational efficiency from route-and-parking quality and shows the scalability of each method. The main insight is that the proposed Heuristic has the lowest runtime across the tested medium- and large-scale sizes because it directly filters feasible parking candidates and applies shortest-path scoring. Method-wise, ACO requires more computation because it repeatedly constructs routes and updates pheromone values, but it remains more controlled than PSO and GA; PSO shows the highest runtime and the strongest variability, while GA is also substantially slower than the Heuristic.
+
+Taken together, the medium- and large-scale experiments show that the proposed Heuristic provides consistent route-and-parking recommendations with the lowest runtime among the tested methods. Across the quality figures, it remains competitive with ACO and generally exhibits less variation than PSO and GA. The parameter analyses show that network size mainly affects travel time, edge density affects route-construction behavior more than parking selection, parking supply expands the candidate-search space without guaranteeing improvement in every metric, traffic level primarily affects the driving component, relaxing the maximum walking-distance limit introduces a walking-cost trade-off, and parking-cost constraints affect the recommendation mainly when the selected parking lot changes.
+
+\subsection{Realistic Urban Network Evaluation Using SUMO}
+
+To further evaluate the proposed framework under realistic urban conditions, a SUMO-based real-road-network instance is constructed from the Waterloo--Kitchener road network extracted from OpenStreetMap. This part of the study evaluates one fixed realistic network rather than a network-size scalability experiment. The extracted map covers an area of approximately \(8.37\,\mathrm{km} \times 6.31\,\mathrm{km}\), corresponding to about \(52.8\,\mathrm{km}^{2}\). After conversion, the SUMO network contains \(2055\) nodes and preserves realistic urban topology, directed road behavior, and one-way connectivity.
+
+The SUMO network is modeled as a directed road graph in which intersections are represented as nodes and road segments as directed edges. Edge length and speed information are used to derive travel-time values. Because the map does not directly provide the parking layer required by DPOF, candidate parking lots are assigned experimentally on eligible nodes. Parking costs, availability status, and walking-distance feasibility are then defined in a controlled way so that the realistic road topology remains compatible with the parking-lot recommendation pipeline.
+
+All methods are evaluated on the same fixed \(2055\)-node network, using the same source node, destination node, candidate parking set, maximum walking-distance threshold, parking-cost cap, and fixed \(\alpha\) setting for each scenario. Since only one realistic network size is considered, the SUMO results are interpreted as realistic fixed-network evaluation rather than as evidence of network-size scalability. The goal of this subsection is to verify whether the framework remains feasible, consistent, and computationally efficient on a realistic urban road topology.
+
+\subsubsection{SUMO Fixed-Network Performance}
+
+The fixed-network SUMO performance results are shown in Fig.~\ref{fig:sumo_node_size_three_metrics}. Because the network size is fixed, the figure does not represent scalability; instead, it provides a direct method comparison on the same realistic road conditions.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.70\textwidth]{COMPARISIONS/sumo_comparison_results/three_metric_panels/node_size_three_metrics.png}
+    \caption{SUMO fixed-network performance on the Waterloo--Kitchener road network.}
+    \label{fig:sumo_node_size_three_metrics}
+\end{figure*}
+
+Fig.~\ref{fig:sumo_node_size_three_metrics}(a)--(c) show total travel time, walking distance, and parking cost for the fixed-network SUMO comparison. Total travel time is the most informative metric in this baseline comparison, while walking distance and parking cost remain effectively unchanged across methods. Method-wise, the proposed Heuristic remains consistent, ACO remains very close to it, and PSO and GA produce higher total travel time because of greater sensitivity in decoded driving-route quality.
+
+\subsubsection{SUMO Runtime Comparison}
+
+The SUMO runtime comparison is shown in Fig.~\ref{fig:sumo_runtime}. It evaluates computational efficiency on the fixed \(2055\)-node real-road network.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1.00\columnwidth]{COMPARISIONS/sumo_comparison_results/three_metric_panels/node_size_runtime_analysis.png}
+    \caption{SUMO runtime comparison on the fixed \(2055\)-node network.}
+    \label{fig:sumo_runtime}
+\end{figure}
+
+Fig.~\ref{fig:sumo_runtime} shows the runtime of each method on the fixed SUMO network. The purpose of this figure is to evaluate computational efficiency on a realistic network rather than to assess scalability across network sizes. The main insight is that the Heuristic retains its computational advantage on the fixed real-road network. Method-wise, the Heuristic is fastest, ACO remains much more controlled than PSO and GA, and PSO shows the highest runtime and the strongest runtime instability because of route-decoding and stochastic-search sensitivity.
+
+\subsubsection{SUMO Traffic-Level Sensitivity}
+
+The SUMO traffic-level sensitivity results are shown in Fig.~\ref{fig:sumo_traffic_parameter}. This experiment tests very low, low, medium, and high traffic conditions on the same real-road network.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/sumo_comparison_results/three_metric_panels/sumo_full_sweep_traffic_level_three_metrics.png}
+    \caption{SUMO traffic-level sensitivity on the fixed \(2055\)-node real-road network.}
+    \label{fig:sumo_traffic_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:sumo_traffic_parameter}(a)--(c) show total travel time, walking distance, and parking cost across the traffic settings. Panels (a) and (b) use grouped bars, while panel (c) uses a heatmap for parking cost. This comparison isolates congestion effects on the same fixed real-road-network instance. The main insight is that traffic mainly affects total travel time, while walking distance and parking cost remain effectively unchanged in many cases. Method-wise, the Heuristic responds directly to updated edge travel times, ACO remains competitive, and GA and PSO show greater sensitivity, with higher travel-time values or more variability under heavier traffic.
+
+\subsubsection{SUMO Walking-Distance Threshold Sensitivity}
+
+The SUMO walking-distance-threshold results are shown in Fig.~\ref{fig:sumo_walking_distance_parameter}. This experiment tests \(W_{\max}=0.25\), \(0.50\), \(0.75\), and \(1.00\,\mathrm{km}\).
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/sumo_comparison_results/three_metric_panels/sumo_full_sweep_walking_distance_three_metrics.png}
+    \caption{SUMO walking-distance sensitivity on the fixed \(2055\)-node real-road network.}
+    \label{fig:sumo_walking_distance_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:sumo_walking_distance_parameter}(a)--(c) show total travel time, walking distance, and parking cost under the four walking-distance thresholds. This comparison highlights how a larger feasible parking set changes the recommendation on the fixed real-road network. The main insight is that the clearest effect appears in walking distance, while travel time changes depending on whether a different parking lot becomes feasible. Method-wise, the Heuristic remains consistent, ACO adapts competitively, and GA and PSO show greater sensitivity because the expanded feasible set interacts with stochastic route decoding.
+
+\subsubsection{SUMO Parking-Cost Sensitivity}
+
+SUMO parking-cost sensitivity is shown in Fig.~\ref{fig:sumo_parking_cost_parameter}. It is evaluated using four parking-cost ranges: \(8.0\)--\(20.5\), \(10.0\)--\(22.5\), \(12.5\)--\(25.0\), and \(15.0\)--\(30.0\).
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/sumo_comparison_results/three_metric_panels/sumo_full_sweep_parking_cost_variation_three_metrics.png}
+    \caption{SUMO parking-cost sensitivity on the fixed \(2055\)-node real-road network.}
+    \label{fig:sumo_parking_cost_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:sumo_parking_cost_parameter}(a)--(c) show total travel time, walking distance, and parking cost under the four parking-cost ranges. This comparison isolates the effect of changing parking-cost values while keeping the real-road topology fixed. The main insight is that parking-cost variation can change the selected parking lot and thereby affect both route choice and walking distance. Where the same parking lot remains dominant, the walking-distance and parking-cost panels are best interpreted as stability checks.
+
+\subsubsection{SUMO Parking-Supply Sensitivity}
+
+SUMO parking-supply sensitivity is shown in Fig.~\ref{fig:sumo_parking_supply_parameter}. The updated x-axis reports the four tested parking-supply levels directly through the number of candidate parking lots: \(103\), \(206\), \(308\), and \(411\), which correspond approximately to \(5\%\), \(10\%\), \(15\%\), and \(20\%\) supply on the fixed \(2055\)-node road network.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/sumo_comparison_results/three_metric_panels/parking_supply_three_metrics.png}
+    \caption{SUMO parking-supply sensitivity on the fixed \(2055\)-node real-road network.}
+    \label{fig:sumo_parking_supply_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:sumo_parking_supply_parameter}(a)--(c) show total travel time, walking distance, and parking cost for the four parking-supply levels. In this SUMO instance, all methods keep the same selected parking lot across the full supply sweep, so the walking-distance and parking-cost panels remain constant at about \(0.389\) km and \(8.88\), respectively. The main effect therefore appears in travel time: the proposed Heuristic remains the best and essentially unchanged across all four supply levels, ACO also stays stable but at a higher travel-time level, GA varies moderately, and PSO becomes markedly worse at the highest supply level. Overall, increasing parking supply expands the candidate set, but on this fixed realistic network it does not change the chosen parking location and therefore does not guarantee a better overall recommendation.
+
+\subsubsection{SUMO Parking-Budget Sensitivity}
+
+SUMO parking-budget sensitivity is shown in Fig.~\ref{fig:sumo_parking_budget_parameter}. It evaluates \(C_{\max}=10.0\), \(15.0\), \(20.5\), and \(25.0\) on the same fixed real-road network.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/sumo_comparison_results/three_metric_panels/sumo_full_sweep_parking_budget_cmax_three_metrics.png}
+    \caption{SUMO parking-budget sensitivity on the fixed \(2055\)-node real-road network.}
+    \label{fig:sumo_parking_budget_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:sumo_parking_budget_parameter}(a)--(c) show total travel time, walking distance, and parking cost across the four parking-cost caps. A stricter cap removes expensive parking lots from the feasible set, while a relaxed cap can allow a costlier lot if it improves travel or walking performance. In the tested real-road instance, unchanged walking-distance or parking-cost values indicate that the same parking lot remains feasible and dominant across several caps.
+
+\subsubsection{SUMO Edge-Density Sensitivity}
+
+The SUMO edge-density sensitivity results are shown in Fig.~\ref{fig:sumo_edge_density_parameter}. The x-axis reports the actual number of directed edges, namely \(5093\), \(5777\), and \(6461\), which provides a clearer interpretation of the connectivity change than category names alone.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.88\textwidth]{COMPARISIONS/sumo_comparison_results/three_metric_panels/edge_density_three_metrics.png}
+    \caption{SUMO edge-density sensitivity on the fixed \(2055\)-node real-road network, with edge density reported using the number of directed edges.}
+    \label{fig:sumo_edge_density_parameter}
+\end{figure*}
+
+Fig.~\ref{fig:sumo_edge_density_parameter}(a)--(c) show total travel time, walking distance, and parking cost as road-network connectivity changes. In contrast to the parking-supply sweep, the edge-density sweep contains three tested SUMO graph variants rather than four. The main effect appears in travel time: the proposed Heuristic improves consistently as connectivity increases, decreasing from about \(0.2469\) hr at \(5093\) edges to \(0.2304\) hr at \(6461\) edges, while GA also improves and becomes close to the Heuristic at the densest graph. ACO remains competitive but does not improve monotonically, and PSO shows the largest variability across the tested densities. By contrast, walking distance and parking cost remain unchanged because all methods continue to select the same parking lot, so the edge-density variation mainly affects routing efficiency rather than parking choice.
+
+Overall, the SUMO evaluation complements the synthetic experiments by introducing real road connectivity, one-way road behavior, and realistic urban topology. The synthetic datasets provide controlled scalability and parameter-sensitivity benchmarks, while the SUMO-based real-road-network instance supports realistic evaluation on a fixed urban map. Across the SUMO results, the Heuristic remains the most computationally efficient method and continues to produce consistent route-and-parking recommendations. ACO remains the closest search-based baseline in overall behavior, while PSO and GA show greater sensitivity to route-decoding complexity and stochastic search behavior. These results support the use of the proposed Heuristic for scalable parking recommendation while keeping the SUMO findings within the scope of a single fixed real-road network.
+
+\section{Conclusion}
+
+This paper presented a Dynamic Parking Optimization Framework (DPOF) for parking recommendation in urban road networks. The framework models parking-lot recommendation as a two-stage route-and-parking optimization problem in which the driver travels to a selected parking lot by vehicle and then completes the trip by walking to the destination. The formulation jointly considers total travel time, walking distance, parking cost, availability, and user-defined walking-distance and parking-cost limits.
+
+An optimization model was used for small-scale validation of the formulation where exact solving was computationally feasible. The small-scale results showed that exact Optimization is useful as a benchmark on solvable instances, but its computational cost increases rapidly as network size grows. This motivated the development of the proposed Heuristic for larger instances. The Heuristic was then evaluated against GA, PSO, and ACO, which were used as comparative meta-heuristic baselines for joint parking-lot selection and route construction.
+
+Across the controlled synthetic urban-like datasets, the proposed Heuristic provided consistent route-and-parking recommendations with low computational cost and remained competitive with ACO in the evaluated settings. PSO and GA also produced feasible recommendations, but they showed greater sensitivity to route-decoding complexity and parameter variation. The fixed SUMO-based real-road-network instance further showed that the framework can be applied on a realistic urban road network with directed links and practical road topology. Taken together, the synthetic and SUMO-based results support the potential use of DPOF for scalable parking recommendation under current traffic and parking conditions, while balancing travel efficiency, walking burden, and parking cost.
+
+Future work can extend the framework by incorporating short-term traffic and parking-occupancy prediction, supporting dynamic parking-spot assignment within selected lots, and coordinating recommendations for multiple drivers competing for the same parking resources. Additional evaluation on multiple SUMO-based real-road-network instances and further study of adaptive parameter tuning for user-specific walking-distance, parking-cost, and objective-weight preferences would also help strengthen the framework.
+
+\begin{thebibliography}{30}
+
+\bibitem{ref1}
+J. Li, H. Qu and L. You, ``An Integrated Approach for the Near Real-Time Parking Occupancy Prediction,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 24, no. 4, pp. 3769--3778, Apr. 2023.
+
+\bibitem{ref2}
+J. Li, H. Ma, X. Li and R. Ma, ``Semantics-Aware Spatial-Temporal Dynamic Graph Transformer Network for On-Street Parking Occupancy Prediction,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 27, no. 1, pp. 842--856, Jan. 2026.
+
+\bibitem{ref3}
+D. Zhao et al., ``MePark: Using Meters as Sensors for Citywide On-Street Parking Availability Prediction,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 23, no. 7, pp. 7244--7257, Jul. 2022.
+
+\bibitem{ref4}
+B. Song, H. Zhou, X. Huang and W. Ma, ``Collaborative Parking Vacancy Prediction for Cities With Partial Sensors Missing,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 25, no. 9, pp. 11439--11451, Sept. 2024.
+
+\bibitem{ref5}
+G. O. Boateng et al., ``Automated Valet Parking and Charging: A Dynamic Pricing and Reservation-Based Framework Leveraging Multi-Agent Reinforcement Learning,'' \emph{IEEE Transactions on Intelligent Vehicles}, vol. 10, no. 2, pp. 1010--1029, Feb. 2025.
+
+\bibitem{ref6}
+S. Saharan, N. Kumar and S. Bawa, ``DyPARK: A Dynamic Pricing and Allocation Scheme for Smart On-Street Parking System,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 24, no. 4, pp. 4217--4234, Apr. 2023.
+
+\bibitem{ref7}
+Z. Hu, Y. Cao, X. Li, H. Ai, L. Xu and Z. Liu, ``Towards Dynamic Pricing Based Autonomous Valet Parking Management Under Demand Uncertainty,'' \emph{IEEE Transactions on Vehicular Technology}, vol. 73, no. 5, pp. 6196--6211, May 2024.
+
+\bibitem{ref8}
+M. Ahmed, M. S. Hamad, A. S. Abdel-Khalik, E. Hamdan, S. Ahmed and N. A. Elmalhy, ``Improved Utilization for Smart Parking Systems Based on Paging Technique,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 25, no. 5, pp. 3375--3388, May 2024.
+
+\bibitem{ref9}
+V. Hassija, V. Saxena, V. Chamola and F. R. Yu, ``A Parking Slot Allocation Framework Based on Virtual Voting and Adaptive Pricing Algorithm,'' \emph{IEEE Transactions on Vehicular Technology}, vol. 69, no. 6, pp. 5945--5957, Jun. 2020.
+
+\bibitem{ref10}
+J. Tang, Y. Wang, W. Liu, X. Luo and Z. Zhou, ``SCP-Tree: Finding Multiple Nearest Parking Spots With Minimal Group Travel Cost,'' \emph{IEEE Access}, vol. 9, pp. 158946--158960, 2021.
+
+\bibitem{ref11}
+T. T. Kim, N. H. Tran, C. Pham, T. LeAnh, M. T. Thai and C. S. Hong, ``Parking Assignment: Minimizing Parking Expenses and Balancing Parking Demand Among Multiple Parking Lots,'' \emph{IEEE Transactions on Automation Science and Engineering}, vol. 17, no. 3, pp. 1320--1331, Jul. 2020.
+
+\bibitem{ref12}
+S. Kim, Y. Tak, E. Barmpounakis and N. Geroliminis, ``Monitoring Outdoor Parking in Urban Areas With Unmanned Aerial Vehicles,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 25, no. 10, pp. 13393--13406, Oct. 2024.
+
+\bibitem{ref13}
+B. Assemi, A. Paz and D. Baker, ``On-Street Parking Occupancy Inference Based on Payment Transactions,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 23, no. 8, pp. 10680--10691, Aug. 2022.
+
+\bibitem{ref14}
+Z. Hu, Y. Cao, J. Huang, L. Wu, L. Xu and R. Zhang, ``CRPark: A Smart Parking System With Competition and Reservation Services,'' \emph{IEEE Transactions on Vehicular Technology}, vol. 74, no. 8, pp. 12981--12996, Aug. 2025.
+
+\bibitem{ref15}
+J. Wang et al., ``PRPSV: Parking Efficiency and Reservation Service Optimization Based on Parking Space View,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 26, no. 8, pp. 11696--11711, Aug. 2025.
+
+\bibitem{ref16}
+P. Wang et al., ``Optimal Dynamic Supply of Parking Permits Under Uncertainties: A Stochastic Control Approach,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 23, no. 10, pp. 17397--17409, Oct. 2022.
+
+\bibitem{ref17}
+Y. Nie, W. Yang, Z. Chen, N. Lu, L. Huang and H. Huang, ``Public Curb Parking Demand Estimation With POI Distribution,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 23, no. 5, pp. 4614--4624, May 2022.
+
+\bibitem{ref18}
+M. A. B. Helal, A. J. Telmoudi, Y. Ouazene and N. Labadie, ``A Hybrid Genetic Algorithm for Green Vehicle Routing Problem,'' in \emph{Proc. IEEE International Conference on Advanced Systems and Emergent Technologies}, 2025, pp. 1--6.
+
+\bibitem{ref19}
+W. Hu and X. Ma, ``Optimization Algorithm of UAVs Task Assignment and Path Planning Based on Dynamic Cluster Particle Swarm Optimization,'' \emph{IEEE Transactions on Intelligent Transportation Systems}, vol. 26, no. 10, pp. 18157--18169, Oct. 2025.
+
+\bibitem{ref20}
+H. Wang et al., ``Transportation Route Optimization of Municipal Solid Waste Based on Improved Ant Colony Algorithm in Internet of Vehicles,'' \emph{IEEE Transactions on Vehicular Technology}, vol. 74, no. 2, pp. 2129--2142, Feb. 2025.
+
+\end{thebibliography}
+
+\end{document}
+\documentclass[conference]{IEEEtran}
